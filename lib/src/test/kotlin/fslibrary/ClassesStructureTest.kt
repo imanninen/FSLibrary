@@ -46,23 +46,25 @@ internal val fsFolderClassTest = TestClass(
     ),
 )
 
+internal val fsCreateMethodTest = TestMethod(
+    "create",
+    TestKotlinType("void"),
+    arguments = listOf(
+        TestVariable(
+            "entryToCreate",
+            javaType = "FSEntry"
+        ),
+        TestVariable(
+            "destination",
+            javaType = "String"
+        )
+    )
+)
+
 internal val fsCreatorClassTest = TestClass(
     "FSCreator",
     "myLib",
     customMethods = listOf(
-        TestMethod(
-            "create",
-            TestKotlinType("void"),
-            arguments = listOf(
-                TestVariable(
-                    "entryToCreate",
-                    javaType = "FSEntry"
-                    ),
-                TestVariable(
-                    "destination",
-                    javaType = "String"
-                )
-            )
-        )
+        fsCreateMethodTest
     )
 )
