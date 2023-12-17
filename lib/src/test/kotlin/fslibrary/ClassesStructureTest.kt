@@ -9,7 +9,7 @@ import org.jetbrains.academy.test.system.models.variable.VariableMutability
 
 internal val fsEntryClassTest = TestClass(
     "FSEntry",
-    "myLib",
+    "fslibrary",
     declaredFields = listOf(
         TestVariable(
             name = "name",
@@ -22,7 +22,7 @@ internal val fsEntryClassTest = TestClass(
 
 internal val fsFileClassTest = TestClass(
     "FSFile",
-    "myLib",
+    "fslibrary",
     declaredFields = listOf(
         TestVariable(
             name = "content",
@@ -35,7 +35,7 @@ internal val fsFileClassTest = TestClass(
 
 internal val fsFolderClassTest = TestClass(
     "FSFolder",
-    "myLib",
+    "fslibrary",
     declaredFields = listOf(
         TestVariable(
             name = "content",
@@ -63,7 +63,7 @@ internal val fsCreateMethodTest = TestMethod(
 
 internal val fsCreatorClassTest = TestClass(
     "FSCreator",
-    "myLib",
+    "fslibrary",
     customMethods = listOf(
         fsCreateMethodTest
     )

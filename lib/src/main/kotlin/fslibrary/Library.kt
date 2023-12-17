@@ -1,7 +1,7 @@
-package myLib
+package fslibrary
 
 import java.io.File
-import java.io.IOException
+import java.util.IllegalFormatFlagsException
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createFile
@@ -30,28 +30,22 @@ class FSCreator() {
                 Path(newDestination).createFile()
                 File(newDestination).writeText(entryToCreate.content)
             } catch (e: Exception) {
-                if (e is IOException) {
-                    println("File already exists or there was IO error!")
-                } else {
-                    println("There is some strange exception!")
-                }
+                // println("failed to crate file: $newDestination")
             } catch (e: FileAlreadyExistsException) {
-                println("There already exists file with current path.")
+                // println("There already exists file with current path.")
             }
         }
         if (entryToCreate is FSFolder) {
+            if (hasSameNames(entryToCreate))
+                throw IllegalStateException("In one directory can't be 2 folders or/and files with same names!")
             try {
                 newDestination = "$newDestination${entryToCreate.name}"
+                if (! newDestination.endsWith("/"))
+                    newDestination = "$newDestination/"
                 Path(newDestination).createDirectory()
                 entryToCreate.content.forEach { this.create(it, newDestination) }
-            } catch (e: Exception) {
-                if (e is IOException) {
-                    println("File already exists or there was IO error!")
-                } else {
-                    println("There is some strange exception!")
-                }
             } catch (e: FileAlreadyExistsException) {
-                println("There already exists file with current path.")
+                // println("There already exists file with current path.")
             }
         }
     }
