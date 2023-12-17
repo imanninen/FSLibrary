@@ -13,7 +13,6 @@ import java.util.*
 import kotlin.io.path.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 
 class LibraryTest {
     init {
@@ -37,6 +36,8 @@ class LibraryTest {
                 )
             )
         )
+        private val arg6 = FSFile("OneFile.txt", "aboba")
+
         private val arg2 = FSFolder(
             "hello",
             listOf(
@@ -78,10 +79,23 @@ class LibraryTest {
             listOf(FSFile("", "empty"))
         )
 
+        private val arg7 = FSFolder(
+            "invalidName", listOf(
+                FSFile("invalidFile/name.txt", "bad naming!"),
+                FSFolder("invalidFolder/name", listOf())
+            )
+        )
+        private val arg8 = FSFolder(
+            "invalid Name", listOf(
+                FSFile("GoodName.txt", "good name!")
+            )
+        )
+
         @JvmStatic
         fun fsCreateMethodTestData() = listOf(
             Arguments.of(arg1, destination),
-            )
+            Arguments.of(arg6, destination),
+        )
 
         @JvmStatic
         fun fsCreateMethodSameNamesTestData() = listOf(
@@ -90,10 +104,13 @@ class LibraryTest {
         )
 
         @JvmStatic
-        fun fsCreateMethodEmptyNameTestData() = listOf(
+        fun fsCreateMethodInvalidNameTestData() = listOf(
             Arguments.of(arg4, destination),
-            Arguments.of(arg5, destination)
+            Arguments.of(arg5, destination),
+            Arguments.of(arg7, destination),
+            Arguments.of(arg8, destination)
         )
+
     }
 
     @Test
@@ -121,7 +138,6 @@ class LibraryTest {
             "FSFile class should extend FSEntry class"
         )
     }
-
 
     @Test
     fun fsCreatorClassSimpleTest() {
@@ -186,8 +202,8 @@ class LibraryTest {
 
     @OptIn(ExperimentalPathApi::class)
     @ParameterizedTest
-    @MethodSource("fsCreateMethodEmptyNameTestData")
-    fun fsCreateMethodEmptyNameTest(testFSEntry: FSEntry, destination: String) {
+    @MethodSource("fsCreateMethodInvalidNameTestData")
+    fun fsCreateMethodInvalidNameTest(testFSEntry: FSEntry, destination: String) {
         val path = if (destination.endsWith("/")) Path("$destination${testFSEntry.name}") else
             Path("$destination/${testFSEntry.name}")
         val invokeData = TestMethodInvokeData(fsCreatorClassTest, fsCreateMethodTest)
@@ -197,7 +213,8 @@ class LibraryTest {
                 invokeData = invokeData,
                 isPrivate = false
             )
-        } catch (_: IllegalArgumentException) {}
+        } catch (_: IllegalArgumentException) {
+        }
 
         assertThrows<IllegalCharsetNameException> { recStructureTest(testFSEntry, destination) }
 
@@ -209,7 +226,9 @@ class LibraryTest {
     }
 
     private fun recStructureTest(currentFSEntry: FSEntry, currentDestination: String) {
-        if (currentFSEntry.name == "")
+        if (currentFSEntry.name == "" || currentFSEntry.name.contains("/") ||
+            currentFSEntry.name.contains(" ")
+        )
             throw IllegalCharsetNameException("You can't create FS entry with empty name!")
         val newDestination = if (currentDestination.endsWith("/"))
             "$currentDestination${currentFSEntry.name}" else "$currentDestination/${currentFSEntry.name}"

@@ -23,7 +23,8 @@ class FSFolder(
 
 class FSCreator() {
     fun create(entryToCreate: FSEntry, destination: String) {
-        if (entryToCreate.name == "")
+        if (entryToCreate.name == "" || entryToCreate.name.contains("/") ||
+            entryToCreate.name.contains(" "))
             return
         var newDestination = if (destination.endsWith("/")) destination else "$destination/"
         if (entryToCreate is FSFile) {
