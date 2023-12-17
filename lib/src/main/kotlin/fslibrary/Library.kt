@@ -23,6 +23,8 @@ class FSFolder(
 
 class FSCreator() {
     fun create(entryToCreate: FSEntry, destination: String) {
+        if (entryToCreate.name == "")
+            return
         var newDestination = if (destination.endsWith("/")) destination else "$destination/"
         if (entryToCreate is FSFile) {
             try {
@@ -44,8 +46,8 @@ class FSCreator() {
                     newDestination = "$newDestination/"
                 Path(newDestination).createDirectory()
                 entryToCreate.content.forEach { this.create(it, newDestination) }
-            } catch (e: FileAlreadyExistsException) {
-                // println("There already exists file with current path.")
+            } catch (_: FileAlreadyExistsException) {
+
             }
         }
     }

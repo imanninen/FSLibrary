@@ -2,21 +2,27 @@ package fslibrary
 
 import org.jetbrains.academy.test.system.models.method.TestMethodInvokeData
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
 import java.lang.reflect.InvocationTargetException
+import java.nio.charset.IllegalCharsetNameException
 import java.util.*
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.Path
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.exists
+import kotlin.io.path.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
 class LibraryTest {
+    init {
+        try {
+            Path("./src/test/kotlin/fslibrary/testDir/").createDirectory()
+        } catch (_: Exception) {
+        }
+    }
+
     companion object {
         private const val destination = "./src/test/kotlin/fslibrary/testDir"
         private val arg1 = FSFolder(
@@ -62,16 +68,31 @@ class LibraryTest {
             )
         )
 
-        @JvmStatic
-        fun fsCreateMethodTestData() = listOf(
-            Arguments.of(arg1, destination),
-            // Arguments.of(arg2, destination),
+        private val arg4 = FSFolder(
+            "",
+            listOf()
+        )
+
+        private val arg5 = FSFolder(
+            "empty",
+            listOf(FSFile("", "empty"))
         )
 
         @JvmStatic
+        fun fsCreateMethodTestData() = listOf(
+            Arguments.of(arg1, destination),
+            )
+
+        @JvmStatic
         fun fsCreateMethodSameNamesTestData() = listOf(
-            // Arguments.of(arg2, destination),
+            Arguments.of(arg2, destination),
             Arguments.of(arg3, destination)
+        )
+
+        @JvmStatic
+        fun fsCreateMethodEmptyNameTestData() = listOf(
+            Arguments.of(arg4, destination),
+            Arguments.of(arg5, destination)
         )
     }
 
@@ -149,20 +170,47 @@ class LibraryTest {
             } catch (_: Exception) {
             }
             assertTrue(e.targetException is IllegalStateException, "You should throw IllegalStateException!")
-        }
-        catch (e: IllegalArgumentException) {
+        } catch (e: IllegalArgumentException) {
 
             try {
                 path.deleteRecursively()
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+            }
         }
         try {
             path.deleteRecursively()
-        } catch (_: Exception) { }
+        } catch (_: Exception) {
+        }
 
     }
 
+    @OptIn(ExperimentalPathApi::class)
+    @ParameterizedTest
+    @MethodSource("fsCreateMethodEmptyNameTestData")
+    fun fsCreateMethodEmptyNameTest(testFSEntry: FSEntry, destination: String) {
+        val path = if (destination.endsWith("/")) Path("$destination${testFSEntry.name}") else
+            Path("$destination/${testFSEntry.name}")
+        val invokeData = TestMethodInvokeData(fsCreatorClassTest, fsCreateMethodTest)
+        try {
+            fsCreatorClassTest.invokeMethodWithArgs(
+                args = arrayOf(testFSEntry, destination),
+                invokeData = invokeData,
+                isPrivate = false
+            )
+        } catch (_: IllegalArgumentException) {}
+
+        assertThrows<IllegalCharsetNameException> { recStructureTest(testFSEntry, destination) }
+
+        if (testFSEntry.name != "")
+            try {
+                path.deleteRecursively()
+            } catch (_: Exception) {
+            }
+    }
+
     private fun recStructureTest(currentFSEntry: FSEntry, currentDestination: String) {
+        if (currentFSEntry.name == "")
+            throw IllegalCharsetNameException("You can't create FS entry with empty name!")
         val newDestination = if (currentDestination.endsWith("/"))
             "$currentDestination${currentFSEntry.name}" else "$currentDestination/${currentFSEntry.name}"
 
