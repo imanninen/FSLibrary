@@ -1,7 +1,6 @@
 package fslibrary
 
 import java.io.File
-import java.util.IllegalFormatFlagsException
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createFile
@@ -32,11 +31,8 @@ class FSCreator() {
                 newDestination = "$newDestination${entryToCreate.name}"
                 Path(newDestination).createFile()
                 File(newDestination).writeText(entryToCreate.content)
-            } catch (e: Exception) {
-                // println("failed to crate file: $newDestination")
-            } catch (e: FileAlreadyExistsException) {
-                // println("There already exists file with current path.")
-            }
+            } catch (_: Exception) {
+            } catch (_: FileAlreadyExistsException) {}
         }
         if (entryToCreate is FSFolder) {
             if (hasSameNames(entryToCreate))

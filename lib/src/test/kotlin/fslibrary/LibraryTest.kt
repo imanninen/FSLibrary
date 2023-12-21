@@ -91,16 +91,55 @@ class LibraryTest {
             )
         )
 
+        private val arg9 = FSFolder(
+            "First", listOf(
+                FSFolder("Second", listOf()),
+                FSFile("Third1", "content"),
+                FSFile("Third2", "content"),
+                FSFile("Third3", "content"),
+                FSFile("Third4", "content"),
+                FSFile("Third5", "content"),
+                FSFile("Third7", "content"),
+                FSFile("Third8", "content"),
+                FSFile("Third9", "content"),
+                FSFile("Third10", "content10")
+            )
+        )
+
+        private val arg10 = FSFolder(
+            "First", listOf(
+                FSFolder(
+                    "Second", listOf(
+                        FSFolder(
+                            "Third", listOf(
+                                FSFolder(
+                                    "Fourth", listOf(
+                                        FSFolder(
+                                            "Fifth", listOf(
+                                                FSFolder("Fifth", listOf())
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
         @JvmStatic
         fun fsCreateMethodTestData() = listOf(
             Arguments.of(arg1, destination),
             Arguments.of(arg6, destination),
+            Arguments.of(arg9, destination)
         )
 
         @JvmStatic
         fun fsCreateMethodSameNamesTestData() = listOf(
             Arguments.of(arg2, destination),
-            Arguments.of(arg3, destination)
+            Arguments.of(arg3, destination),
+            Arguments.of(arg10, destination)
         )
 
         @JvmStatic
