@@ -13,18 +13,17 @@ abstract class FSEntry(
 class FSFile(
     fileName: String,
     val content: String
-): FSEntry(fileName)
+) : FSEntry(fileName)
 
 class FSFolder(
     folderName: String,
     val content: List<FSEntry>
-): FSEntry(folderName)
+) : FSEntry(folderName)
 
-class FSCreator() {
+class FSCreator {
     fun create(entryToCreate: FSEntry, destination: String) {
-        if (entryToCreate.name == "" || entryToCreate.name.contains("/") ||
-            entryToCreate.name.contains(" "))
-            return
+        if (isInvalidEntryName(entryToCreate))
+            throw InvalidCharactersInName("You write bad name to file/folder!")
         var newDestination = if (destination.endsWith("/")) destination else "$destination/"
         if (entryToCreate is FSFile) {
             try {
@@ -32,20 +31,20 @@ class FSCreator() {
                 Path(newDestination).createFile()
                 File(newDestination).writeText(entryToCreate.content)
             } catch (_: Exception) {
-            } catch (_: FileAlreadyExistsException) {}
+            }
         }
         if (entryToCreate is FSFolder) {
             if (hasSameNames(entryToCreate))
-                throw IllegalStateException("In one directory can't be 2 folders or/and files with same names!")
-            try {
-                newDestination = "$newDestination${entryToCreate.name}"
-                if (! newDestination.endsWith("/"))
-                    newDestination = "$newDestination/"
-                Path(newDestination).createDirectory()
-                entryToCreate.content.forEach { this.create(it, newDestination) }
-            } catch (_: FileAlreadyExistsException) {
+                throw TwoFilesWithSameNamesException(
+                    "In one directory can't be 2 folders or/and files with same names!"
+                )
 
-            }
+            newDestination = "$newDestination${entryToCreate.name}"
+            if (!newDestination.endsWith("/"))
+                newDestination = "$newDestination/"
+            Path(newDestination).createDirectory()
+            entryToCreate.content.forEach { this.create(it, newDestination) }
+
         }
     }
 }

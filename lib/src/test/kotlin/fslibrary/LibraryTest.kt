@@ -150,6 +150,12 @@ class LibraryTest {
             Arguments.of(arg8, destination)
         )
 
+        @JvmStatic
+        fun fsCreateMethodFileExistsTestData() = listOf(
+            Arguments.of(arg1, destination, arg1),
+            Arguments.of(arg6, destination, arg6),
+        )
+
     }
 
     @Test
@@ -224,9 +230,9 @@ class LibraryTest {
                 path.deleteRecursively()
             } catch (_: Exception) {
             }
-            assertTrue(e.targetException is IllegalStateException, "You should throw IllegalStateException!")
+            assertTrue(e.targetException is TwoFilesWithSameNamesException,
+                "You should throw TwoFilesWithSameNamesException!")
         } catch (e: IllegalArgumentException) {
-
             try {
                 path.deleteRecursively()
             } catch (_: Exception) {
@@ -236,7 +242,6 @@ class LibraryTest {
             path.deleteRecursively()
         } catch (_: Exception) {
         }
-
     }
 
     @OptIn(ExperimentalPathApi::class)
@@ -252,10 +257,14 @@ class LibraryTest {
                 invokeData = invokeData,
                 isPrivate = false
             )
-        } catch (_: IllegalArgumentException) {
-        }
-
-        assertThrows<IllegalCharsetNameException> { recStructureTest(testFSEntry, destination) }
+        } catch (e: InvocationTargetException) {
+            try {
+                path.deleteRecursively()
+            } catch (_: Exception) {
+            }
+            assertTrue(e.targetException is InvalidCharactersInName,
+                "You should throw InvalidCharactersInName!")
+        } catch (_: IllegalArgumentException) {}
 
         if (testFSEntry.name != "")
             try {
@@ -264,11 +273,43 @@ class LibraryTest {
             }
     }
 
+    @OptIn(ExperimentalPathApi::class)
+    @ParameterizedTest
+    @MethodSource("fsCreateMethodFileExistsTestData")
+    fun fsCreateMethodFileExistsTest(initEntry: FSEntry, destination: String, sameEntry: FSEntry) {
+        val path = if (destination.endsWith("/")) Path("$destination${initEntry.name}") else
+            Path("$destination/${initEntry.name}")
+        val invokeData = TestMethodInvokeData(fsCreatorClassTest, fsCreateMethodTest)
+        try {
+            fsCreatorClassTest.invokeMethodWithArgs(
+                args = arrayOf(initEntry, destination),
+                invokeData = invokeData,
+                isPrivate = false
+            )
+        } catch (_: IllegalArgumentException) {
+        }
+        try {
+            fsCreatorClassTest.invokeMethodWithArgs(
+                args = arrayOf(sameEntry, destination),
+                invokeData = invokeData,
+                isPrivate = false
+            )
+        } catch (e: InvocationTargetException) {
+            try {
+                path.deleteRecursively()
+            } catch (_: Exception) {
+            }
+            assertTrue(e.targetException is java.nio.file.FileAlreadyExistsException,
+                "You should throw FileAlreadyExistsException! You throw ${e.targetException}.")
+        } catch (_: IllegalArgumentException) {}
+
+        try {
+            path.deleteRecursively()
+        } catch (_: Exception) {
+        }
+    }
+
     private fun recStructureTest(currentFSEntry: FSEntry, currentDestination: String) {
-        if (currentFSEntry.name == "" || currentFSEntry.name.contains("/") ||
-            currentFSEntry.name.contains(" ")
-        )
-            throw IllegalCharsetNameException("You can't create FS entry with empty name!")
         val newDestination = if (currentDestination.endsWith("/"))
             "$currentDestination${currentFSEntry.name}" else "$currentDestination/${currentFSEntry.name}"
 
